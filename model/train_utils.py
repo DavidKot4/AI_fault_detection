@@ -40,7 +40,7 @@ def load_train_test_set(train_df, test_df):
     x_train = scaler.fit_transform(x_train_raw)
     x_test = scaler.transform(x_test_raw)
 
-    joblib.dump(scaler, './model/saved_models/data_scalerV3.1.pkl')
+    joblib.dump(scaler, './model/saved_models/data_scaler_v4.pkl')
 
     # View scaled range of data
     print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")

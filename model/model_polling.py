@@ -8,8 +8,8 @@ from pymodbus.client import ModbusTcpClient
 from train_utils import predict_single_row
 from model import FaultMLP
 
-SCALER_PATH='./model/saved_models/data_scalerV3.1.pkl'
-MODEL_PATH='./model/saved_models/fault_model_v3.1.pth'
+SCALER_PATH='./model/saved_models/data_scaler_v4.pkl'
+MODEL_PATH='./model/saved_models/fault_model_v4.pth'
 DEVICE_IP="192.168.168.11"
 POLL_TIME=0.125
 PU_INDICIES=np.arange(18)
@@ -33,6 +33,7 @@ client.connect()
 
 print(f'Connected successfully to {DEVICE_IP}')
 
+times=[]
 
 first_row = modbus_polling.poll_device(client, DEVICE_IP)
 print(first_row)
@@ -57,7 +58,7 @@ try:
         scaled_row = scaler.transform(curr_row.reshape(1, -1))
         tensor_row = torch.tensor(scaled_row, dtype=torch.float32).to(device)
 
-        prediction, confidence =  predict_single_row(model, tensor_row)
+        prediction, confidence =  predict_single_row(model, tensor_row, times)
 
         #print results (TODO - Send to frontend)
         print(f'Predicted class: {prediction} with {confidence}%')
