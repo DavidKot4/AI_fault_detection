@@ -6,7 +6,7 @@ from pynput import keyboard
 from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
-NAME="3phase_60_40_20_1000.csv" #FAULTYPE_L1S_L2S_L3S_LEN 
+NAME="2phase_100_100_0_150.csv" #FAULTYPE_L1S_L2S_L3S_LEN 
 STEP_SIZE=0.050
 DEVICE_IP="192.168.168.11"
 SAMPLE_LENGTH=20 #Total amount to save
