@@ -8,8 +8,8 @@ from pymodbus.client import ModbusTcpClient
 from train_utils import predict_single_row
 from model import FaultMLP
 
-SCALER_PATH='./model/saved_models/data_scalerV3.pkl'
-MODEL_PATH='./model/saved_models/fault_model_v3.pth'
+SCALER_PATH='./model/saved_models/data_scalerV3.1.pkl'
+MODEL_PATH='./model/saved_models/fault_model_v3.1.pth'
 DEVICE_IP="192.168.168.11"
 POLL_TIME=0.125
 PU_INDICIES=np.arange(18)
@@ -33,7 +33,12 @@ client.connect()
 
 print(f'Connected successfully to {DEVICE_IP}')
 
-base_vals = np.array(modbus_polling.poll_device(client, DEVICE_IP), dtype=np.float32)
+
+first_row = modbus_polling.poll_device(client, DEVICE_IP)
+print(first_row)
+base_vals = np.array(first_row)
+
+print(base_vals[1])
 print("Saved first row for PU calculation")
 
 #poll data
@@ -42,11 +47,11 @@ try:
 
         loop_start = time.time()
 
-        curr_row = np.array(modbus_polling.poll_device(client, DEVICE_IP), dtype=np.float32)
-
-        print(curr_row)
+        curr_row = np.array(modbus_polling.poll_device(client, DEVICE_IP))
 
         curr_row[PU_INDICIES] = curr_row[PU_INDICIES] / base_vals[PU_INDICIES]
+
+        print(curr_row)
 
         #scale data & convert to tensor
         scaled_row = scaler.transform(curr_row.reshape(1, -1))

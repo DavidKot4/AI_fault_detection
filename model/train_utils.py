@@ -8,7 +8,7 @@ import joblib
 from sklearn.preprocessing import QuantileTransformer
 import seaborn as sns 
 from sklearn.inspection import permutation_importance
-
+import time
 
 def calc_per_unit(base, value):
     return value / base
@@ -40,7 +40,7 @@ def load_train_test_set(train_df, test_df):
     x_train = scaler.fit_transform(x_train_raw)
     x_test = scaler.transform(x_test_raw)
 
-    joblib.dump(scaler, './model/saved_models/data_scalerV3.pkl')
+    joblib.dump(scaler, './model/saved_models/data_scalerV3.1.pkl')
 
     # View scaled range of data
     print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")
@@ -162,7 +162,7 @@ def evaluate_model(model, test_loader, device):
     
     return all_preds
 
-def predict_single_row(model, row):
+def predict_single_row(model, row, times):
     """
     Predicts the class of a single input sample.
 
@@ -177,8 +177,18 @@ def predict_single_row(model, row):
         row = row.unsqueeze(0)
 
     with torch.no_grad():
+
+        torch.cuda.synchronize()
+        start = time.perf_counter()
+
         output = model(row)
         
+        torch.cuda.synchronize()
+        end = time.perf_counter()
+
+        print((end - start) * 1000)
+        times.append((end - start) * 1000)
+
         # 5. Interpret Results
         # 'output' is a list of 5 "scores" (Logits)
         # We take the index of the highest score

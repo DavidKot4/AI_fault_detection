@@ -53,7 +53,7 @@ for epoch in range(num_epochs):
     loss, accr = train_model(model, train_loader, criterion, optimizer, device)
     print(f"Epoch {epoch} - Loss: {loss} Accuracy: {accr}%")
 
-torch.save(model.state_dict(), "./model/saved_models/fault_model_v3.pth")
+torch.save(model.state_dict(), "./model/saved_models/fault_model_v3.1.pth")
 
 #Run test loader
 all_preds = evaluate_model(model, test_loader, device)
