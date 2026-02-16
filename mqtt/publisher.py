@@ -19,7 +19,6 @@ except Exception as e:
     exit()
 
 #Attempt to send data
-
 try:
     while True:
        payload = {
