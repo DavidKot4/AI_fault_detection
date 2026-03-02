@@ -3,11 +3,14 @@
 #output - a csv file with time-stamp column every 20 ms (.02s), need to figure out how to do classification of fault rows
 import csv
 import time
+import modbus_polling
 from pynput import keyboard
+from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
 NAME="FAULT_NAME.csv" #FAULTYPE_L1S_L2S_L3S 
 STEP_SIZE=0.2
+DEVICE_IP="192.168.168.26"
 SAMPLE_LENGTH=20 #Total amount to save
 HEADERS = ["Value1", "Value2", "Value3", "Value4"]
 FAULT_MAP= {
@@ -33,10 +36,7 @@ def on_release(key):
     global current_label
     current_label = 0
 
-listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-listener.start()
-
-#--Data Saving--
+#--DATA SAVING--
 #createCSV
 def create_csv(name, headers):
     with open(name, "x", newline='\n') as f:
@@ -54,6 +54,13 @@ def save_row(file, data, curr_time, step_size=0.02):
     print(f"Added row: t+{curr_time} to file")
 
 #--EXECUTION--
+
+listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+listener.start()
+
+client = ModbusTcpClient(DEVICE_IP, port=502)
+client.connect()
+
 create_csv(NAME, HEADERS)
 
 start_time = time.time()
@@ -66,7 +73,9 @@ try:
     while elapsed < SAMPLE_LENGTH:
         loop_start = time.time()
 
-        save_row(NAME, r1, elapsed, current_label)
+        curr_row = modbus_polling.poll_device(client, DEVICE_IP)
+
+        save_row(NAME, curr_row, elapsed, current_label)
         index += 1
         elapsed = index * STEP_SIZE
 
@@ -79,4 +88,5 @@ except KeyboardInterrupt:
     print("Stop triggered by user")
 
 print("Finished Collection")
+client.close()
 listener.stop()
