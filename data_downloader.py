@@ -1,6 +1,4 @@
-#output: Read in Register data as numpy array
-#goal - process data into AI-trainable data
-#output - a csv file with time-stamp column every 20 ms (.02s), need to figure out how to do classification of fault rows
+
 import csv
 import time
 import modbus_polling
@@ -9,18 +7,17 @@ from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
 NAME="FAULT_NAME.csv" #FAULTYPE_L1S_L2S_L3S 
-STEP_SIZE=0.2
+STEP_SIZE=0.02
 DEVICE_IP="192.168.168.26"
 SAMPLE_LENGTH=20 #Total amount to save
-HEADERS = ["Value1", "Value2", "Value3", "Value4"]
+HEADERS = ['t+','class','V_L1', 'V_L2', 'V_L3', 'V_L12', 'V_L23', 'V_L31', 'A_L1', 'A_L2', 'A_L3', 'VA_L1', 'VA_L1', 'VA_L2', 'W_L1', 'W_L2', 'W_L1', 'Q_L1', 'Q_L2', 'Q_L3', 'PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
 FAULT_MAP= {
-    '1': 1,
-    '2': 2,  
-    '3': 3,  
-    '4': 4,  
+    '1': 1, #1-phase
+    '2': 2, #2-phase
+    '3': 3, #2-phase-ground
+    '4': 4, #3-phase
     '5': 5   
 }
-r1 = [230.1, 230.2, 229.8, 0.35]
 
 #--KEYBOARD TRACKING--
 current_label = 0
@@ -45,11 +42,11 @@ def create_csv(name, headers):
     print(f"Created CSV file: {name}")
 
 #save row to CSV
-def save_row(file, data, curr_time, step_size=0.02):
+def save_row(file, data, curr_time, current_label):
     
     with open(file, 'a', newline='\n') as f:
         writer = csv.writer(f)
-        writer.writerow([f"{curr_time:.3f}", *data, current_label])
+        writer.writerow([f"{curr_time:.3f}", current_label, *data,])
 
     print(f"Added row: t+{curr_time} to file")
 
