@@ -6,17 +6,16 @@ from pynput import keyboard
 from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
-NAME="FAULT_NAME.csv" #FAULTYPE_L1S_L2S_L3S 
-STEP_SIZE=0.02
-DEVICE_IP="192.168.168.26"
+NAME="1phase_150MS.csv" #FAULTYPE_L1S_L2S_L3S 
+STEP_SIZE=0.005
+DEVICE_IP="192.168.168.11"
 SAMPLE_LENGTH=20 #Total amount to save
-HEADERS = ['t+','class','V_L1', 'V_L2', 'V_L3', 'V_L12', 'V_L23', 'V_L31', 'A_L1', 'A_L2', 'A_L3', 'VA_L1', 'VA_L1', 'VA_L2', 'W_L1', 'W_L2', 'W_L1', 'Q_L1', 'Q_L2', 'Q_L3', 'PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
+HEADERS = ['t+','class','V_L1', 'V_L2', 'V_L3', 'V_L12', 'V_L23', 'V_L31', 'A_L1', 'A_L2', 'A_L3', 'VA_L1', 'VA_L2', 'VA_L3', 'W_L1', 'W_L2', 'W_L3', 'Q_L1', 'Q_L2', 'Q_L3', 'PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
 FAULT_MAP= {
     '1': 1, #1-phase
     '2': 2, #2-phase
     '3': 3, #2-phase-ground
     '4': 4, #3-phase
-    '5': 5   
 }
 
 #--KEYBOARD TRACKING--
@@ -26,6 +25,7 @@ def on_press(key):
     global current_label
     try:
         current_label = FAULT_MAP.get(key.char, 0)
+        print(f"Key Recorded: {key.char}")
     except AttributeError:
         current_label = 0 #reset label to normal
 
