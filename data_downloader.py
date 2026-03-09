@@ -6,8 +6,8 @@ from pynput import keyboard
 from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
-NAME="1phase_150MS.csv" #FAULTYPE_L1S_L2S_L3S 
-STEP_SIZE=0.005
+NAME="3phase_60_40_20_1000.csv" #FAULTYPE_L1S_L2S_L3S_LEN 
+STEP_SIZE=0.050
 DEVICE_IP="192.168.168.11"
 SAMPLE_LENGTH=20 #Total amount to save
 HEADERS = ['t+','class','V_L1', 'V_L2', 'V_L3', 'V_L12', 'V_L23', 'V_L31', 'A_L1', 'A_L2', 'A_L3', 'VA_L1', 'VA_L2', 'VA_L3', 'W_L1', 'W_L2', 'W_L3', 'Q_L1', 'Q_L2', 'Q_L3', 'PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
