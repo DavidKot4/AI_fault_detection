@@ -3,7 +3,7 @@ from struct import pack, unpack
 import time
 import numpy as np
 
-device_ips = ['192.168.168.26']
+device_ips = ['192.168.168.11']
 duration = 0.1 * 60  
 start_time = time.time()
 
