@@ -6,7 +6,7 @@ from pynput import keyboard
 from pymodbus.client import ModbusTcpClient
 
 #--CONFIG--
-NAME="feeder_test.csv" #FAULTYPE_L1S_L2S_L3S_LEN 
+NAME="2-phase_100_100_0_2000M.csv" #FAULTYPE_L1S_L2S_L3S_LEN 
 STEP_SIZE=0.050
 DEVICE_IP="192.168.168.11"
 SAMPLE_LENGTH=20 #Total amount to save
@@ -15,7 +15,7 @@ FAULT_MAP= {
     '1': 1, #1-phase
     '2': 2, #2-phase
     '3': 3, #2-phase-ground
-    '4': 4, #3-phase
+    '4': 4, #3-phase 
 }
 
 #--KEYBOARD TRACKING--
