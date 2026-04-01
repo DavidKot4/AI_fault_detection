@@ -1,5 +1,7 @@
 import torch
 
+
+
 def train_model(model, train_loader, criterion, optimizer, device):
     model.train() # Set to training mode (enables Dropout)
     running_loss = 0.0
