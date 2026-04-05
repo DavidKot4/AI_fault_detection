@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class FaultMLP(nn.Module):
-    def __init__(self, input_size=27, num_classes=4):
+    def __init__(self, input_size=24, num_classes=5):
         super(FaultMLP, self).__init__()
         
         # Layer 1: Reads in 27 features and transform them into 64-demension space (improved accuracy)
