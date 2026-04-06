@@ -1,4 +1,7 @@
 import torch
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 def train_model(model, train_loader, criterion, optimizer, device):
     model.train() # Set to training mode (enables Dropout)
@@ -75,3 +78,31 @@ def predict_single_row(model, row):
         confidence = torch.max(probabilities).item() * 100
 
     return predicted_class.item(), confidence
+
+def plot_confusion_matrix(model, test_loader, device, class_names):
+    model.eval()
+    all_preds = []
+    all_labels = []
+    
+    # 1. Collect all predictions
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs = inputs.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    
+    # 2. Calculate the matrix
+    cm = confusion_matrix(all_labels, all_preds)
+    
+    # 3. Plotting
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=class_names, yticklabels=class_names)
+    
+    plt.ylabel('Actual Fault Type')
+    plt.xlabel('Predicted Fault Type')
+    plt.title('Fault Detection Confusion Matrix')
+    plt.show()
