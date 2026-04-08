@@ -1,9 +1,12 @@
 import pandas as pd
 import glob
 from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.model_selection import train_test_split
+
 
 folder_path = './data/verified/*.csv'
-output_path = './data_out/data_final.csv'
+output_path = './data_out/final_data2.csv'
 all_files = glob.glob(folder_path)
 
 def data_audit(files):
@@ -39,33 +42,45 @@ for filename in all_files:
 #The "Big Bang" - Fuse them into one master dataframe
 master_df = pd.concat(li, axis=0, ignore_index=True)
 
-#split normal & fault rows
-normal_rows = master_df[master_df['class'] == 0].sample(n=1032, random_state=42)
-fault_rows = master_df[master_df['class'] != 0]
-
-#Oversample fault rows to 1000
-X = fault_rows.drop(columns=['class'])
-Y = fault_rows['class']
-
-strategy = {1: 1032, 2: 1032, 3: 1032, 4: 1032}
-
-ros = RandomOverSampler(sampling_strategy=strategy, random_state=42)
-x_resample, y_resample = ros.fit_resample(X, Y)
-
-faults_balanced = pd.DataFrame(x_resample)
-faults_balanced['class'] = y_resample
-
-#Concat with normal rows
-balanced_df = pd.concat([normal_rows, faults_balanced], axis=0)
-#Shuffle rows
-balanced_df = balanced_df.sample(frac=1, random_state=42).reset_index(drop=True) 
-
-#write to CSV
-balanced_df.to_csv(output_path, index=False)
+master_df.to_csv(output_path, index=False)
 
 print(f"Loaded {len(all_files)} files into a single matrix of {master_df.shape[0]} rows.")
-print(balanced_df.head(10))
-print(balanced_df['class'].value_counts())
-print(balanced_df['class'].value_counts(normalize=True) * 100)
+print(master_df.head(10))
+print(master_df['class'].value_counts())
+print(master_df['class'].value_counts(normalize=True) * 100)
 
-  
+
+def split_files(file):
+     
+     df = pd.read_csv(file, index_col=False)
+     X = df.drop('class', axis=1)
+     Y = df['class']
+
+     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=.20, random_state=42, stratify=Y)
+
+     #Create test file
+     test_df = pd.concat([y_test, x_test], axis=1)
+     test_df.to_csv('./data_out/test_data_pure.csv', index=False)
+     print(f"Saved {len(test_df)} rows to test_data_pure.csv")
+     print(test_df['class'].value_counts())
+
+     #Undersample normal rows
+     rus = RandomUnderSampler(sampling_strategy={0: 2048}, random_state=42)
+     X_train_under, y_train_under = rus.fit_resample(x_train, y_train)
+
+     strategy = {0:2048, 1:2048, 2:2048, 3:2048, 4:2048}
+
+     #Oversample fault rows in training file
+     ros = RandomOverSampler(sampling_strategy=strategy, random_state=42)
+     X_train_final, y_train_final = ros.fit_resample(X_train_under, y_train_under)
+     
+     #Write to training CSV
+     train_resampled_df = pd.concat([y_train_final, X_train_final], axis=1)
+     #train_resampled_df = train_resampled_df.sample(frac=1, random_state=42).reset_index(drop=True)
+
+     train_resampled_df.to_csv('./data_out/train_data_oversampled.csv', index=False)
+     
+     print(f"Saved {len(train_resampled_df)} rows to training_data.csv")
+     print(train_resampled_df['class'].value_counts())
+
+split_files(output_path)

@@ -1,12 +1,10 @@
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 import torch.nn as nn
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+import numpy as np
 from model import FaultMLP
-from train_utils import train_model, evaluate_model
-import joblib
+from train_utils import train_model, evaluate_model, plot_confusion_matrix, load_train_test_set
 
 #Hyperparameters
 num_epochs = 50
@@ -21,38 +19,33 @@ model = FaultMLP(input_size=24, num_classes=5).to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-#Train loader
-df = pd.read_csv('./data_out/data_final.csv')
-X = df.drop(columns=['class']).values #features
-Y = df['class'].values #classification
+#Load test/train data and convert to tensors
+train_df = pd.read_csv('./data_out/train_data_oversampled.csv')
+test_df = pd.read_csv('./data_out/test_data_pure.csv')
 
-x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=.20, random_state=42, stratify=Y)
+train_dataset, test_dataset = load_train_test_set(train_df, test_df)
 
-scaler = StandardScaler()
-x_train = scaler.fit_transform(x_train)
-x_test = scaler.transform(x_test)
-
-X_train_tensor = torch.tensor(x_train, dtype=torch.float32)
-y_train_tensor = torch.tensor(y_train, dtype=torch.long)
-
-X_test_tensor = torch.tensor(x_test, dtype=torch.float32)
-y_test_tensor = torch.tensor(y_test, dtype=torch.long)
-
-#Create TensorDatasets
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
-
-# 5. Create DataLoaders
+#Create DataLoaders
 train_loader = DataLoader(dataset=train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(dataset=test_dataset, batch_size=64, shuffle=False)
 
+#Training loop
 for epoch in range(num_epochs):
     loss, accr = train_model(model, train_loader, criterion, optimizer, device)
     print(f"Epoch {epoch} - Loss: {loss} Accuracy: {accr}%")
 
-torch.save(model.state_dict(), "fault_model_v1.pth")
-joblib.dump(scaler, 'data_scaler.pkl')
+torch.save(model.state_dict(), "./model/saved_models/fault_model_v2.2.pth")
 
-#Validation & testing
-test_acc = evaluate_model(model, test_loader, device)
+#Run test loader
+all_preds = evaluate_model(model, test_loader, device)
+
+#save problem rows
+test_df.insert(0, 'predicted_class', all_preds)
+mislabeled = test_df[test_df['class'] != test_df['predicted_class']]
+print(f"Found {len(mislabeled)} rows & saved to CSV.")
+mislabeled.to_csv('./data_out/mislabeled_rows.csv', index=False)
+
+#plot confusion matrix
+labels = ["Normal", "1-phase", "2-phase", "2-phaseG", "3-Phase"]
+plot_confusion_matrix(model, test_loader, device, labels)
 

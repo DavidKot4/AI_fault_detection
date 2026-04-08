@@ -1,7 +1,45 @@
 import torch
+from torch.utils.data import TensorDataset
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import QuantileTransformer
 import seaborn as sns
+from sklearn.metrics import f1_score, balanced_accuracy_score
+import joblib
+
+def load_train_test_set(train_df, test_df):
+    x_train_raw = train_df.drop(columns=['class']).values
+    y_train = train_df['class'].values
+
+    x_test_raw = test_df.drop(columns=['class']).values
+    y_test = test_df['class'].values
+
+    scaler = QuantileTransformer(output_distribution='normal', n_quantiles=1000)
+    x_train = scaler.fit_transform(x_train_raw)
+    x_test = scaler.transform(x_test_raw)
+
+    joblib.dump(scaler, 'data_scalerV2.2.pkl')
+
+    # Assuming X_train_scaled is your array after the scaler
+    print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")
+    print(f"1-Phase fault range (scaled): {np.min(x_train[y_train==1]):.4f} to {np.max(x_train[y_train==1]):.4f}")
+    print(f"2-Phase fault range (scaled): {np.min(x_train[y_train==2]):.4f} to {np.max(x_train[y_train==2]):.4f}")
+    print(f"2-PhaseG fault range (scaled): {np.min(x_train[y_train==3]):.4f} to {np.max(x_train[y_train==3]):.4f}")
+    print(f"3-Phase fault range (scaled): {np.min(x_train[y_train==4]):.4f} to {np.max(x_train[y_train==4]):.4f}")
+
+    X_train_tensor = torch.tensor(x_train, dtype=torch.float32)
+    y_train_tensor = torch.tensor(y_train, dtype=torch.long)
+
+    X_test_tensor = torch.tensor(x_test, dtype=torch.float32)
+    y_test_tensor = torch.tensor(y_test, dtype=torch.long)
+
+    #Create TensorDatasets
+    train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+    test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+
+    return train_dataset, test_dataset
+
 
 def train_model(model, train_loader, criterion, optimizer, device):
     model.train() # Set to training mode (enables Dropout)
@@ -41,6 +79,9 @@ def evaluate_model(model, test_loader, device):
     # This turns off Dropout so the model uses its full 'brain'
     model.eval() 
     
+    all_preds = []
+    all_labels = []
+
     correct = 0
     total = 0
     
@@ -58,9 +99,18 @@ def evaluate_model(model, test_loader, device):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
+            all_preds.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
+    all_preds = np.array(all_preds)
+    all_labels = np.array(all_labels)
+
     accuracy = 100 * correct / total
     print(f'Final Test Accuracy: {accuracy:.2f}%')
-    return accuracy
+    print(f"Balanced Accuracy: {balanced_accuracy_score(all_labels, all_preds):.4f}")
+    print(f"Macro F1-Score: {f1_score(all_labels, all_preds, average='macro'):.4f}")
+    
+    return all_preds
 
 def predict_single_row(model, row):
     model.eval()
