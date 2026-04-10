@@ -1,3 +1,22 @@
+"""
+@file train.py
+@brief Training script for FaultMLP model used in fault classification.
+
+This script:
+- Loads training and testing datasets
+- Initializes and trains a neural network model (FaultMLP)
+- Evaluates model performance on test data
+- Saves the trained model weights
+- Identifies and stores misclassified samples
+- Generates a confusion matrix for performance visualization
+
+Dependencies:
+    - PyTorch
+    - pandas
+    - numpy
+
+"""
+
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
