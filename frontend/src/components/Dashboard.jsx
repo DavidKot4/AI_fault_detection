@@ -18,7 +18,7 @@ export default function Dashboard() {
   return (
     <div style={container}>
       {/* TITLE */}
-      <h1 style={titleStyle}>⚡ Smart Grid Fault Monitor</h1>
+      <h1 style={titleStyle}>⚡ Smart Grid Fault Monitor ⚡</h1>
 
       {/* STATUS (stays left like before) */}
       <div style={statusContainer}>
