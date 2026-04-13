@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import MultiGraph from "./MultiGraph";
 
 export default function Dashboard() {
   const [fault, setFault] = useState("No Fault");
@@ -41,6 +42,33 @@ export default function Dashboard() {
           value={`${(confidence * 100).toFixed(2)}%`}
         />
         <Card title="Last Update" value={time} />
+      </div>
+
+      <div style={graphGrid}>
+        <MultiGraph
+          title="Voltages (Line-to-Neutral)"
+          lines={["V_L1", "V_L2", "V_L3"]}
+        />
+
+        <MultiGraph
+          title="Voltages (Line-to-Line)"
+          lines={["V_L1_L2", "V_L2_L3", "V_L3_L1"]}
+        />
+
+        <MultiGraph
+          title="Current"
+          lines={["I_L1", "I_L2", "I_L3"]}
+        />
+
+        <MultiGraph
+          title="Apparent Power"
+          lines={["VA_L1", "VA_L2", "VA_L3"]}
+        />
+
+        <MultiGraph
+          title="Active Power"
+          lines={["W_L1", "W_L2", "W_L3"]}
+        />
       </div>
 
       {/* HISTORY */}
@@ -147,4 +175,13 @@ const historyItem = {
   fontSize: "14px",
   color: "#3a3a3c",
   marginBottom: "6px",
+};
+
+const graphGrid = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "20px",
+  marginTop: "40px",
+  width: "100%",
+  maxWidth: "1100px",
 };
