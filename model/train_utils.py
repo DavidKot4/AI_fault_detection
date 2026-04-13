@@ -9,22 +9,22 @@ from sklearn.metrics import f1_score, balanced_accuracy_score
 import joblib
 
 def load_train_test_set(train_df, test_df):
- """
-    Loads and preprocesses training and testing datasets.
+    """
+        Loads and preprocesses training and testing datasets.
 
-    This function:
-    - Splits features and labels
-    - Applies QuantileTransformer normalization
-    - Saves the scaler for future inference
-    - Converts arrays into PyTorch TensorDatasets
+        This function:
+        - Splits features and labels
+        - Applies QuantileTransformer normalization
+        - Saves the scaler for future inference
+        - Converts arrays into PyTorch TensorDatasets
 
-    Args:
-        train_df (pd.DataFrame): Training dataframe containing features and 'class' column.
-        test_df (pd.DataFrame): Testing dataframe containing features and 'class' column.
+        Args:
+            train_df (pd.DataFrame): Training dataframe containing features and 'class' column.
+            test_df (pd.DataFrame): Testing dataframe containing features and 'class' column.
 
-    Returns:
-        tuple: (train_dataset, test_dataset) as PyTorch TensorDataset objects.
-"""
+        Returns:
+            tuple: (train_dataset, test_dataset) as PyTorch TensorDataset objects.
+    """
     x_train_raw = train_df.drop(columns=['class']).values
     y_train = train_df['class'].values
 
@@ -56,7 +56,9 @@ def load_train_test_set(train_df, test_df):
 
     return train_dataset, test_dataset
 
-"""
+
+def train_model(model, train_loader, criterion, optimizer, device):
+    """
     Trains the model for one epoch.
 
     Performs forward pass, loss computation, backpropagation,
@@ -72,7 +74,6 @@ def load_train_test_set(train_df, test_df):
     Returns:
         tuple: (epoch_loss, epoch_accuracy)
     """
-def train_model(model, train_loader, criterion, optimizer, device):
     model.train() # Set to training mode (enables Dropout)
     running_loss = 0.0
     correct = 0
@@ -106,7 +107,7 @@ def train_model(model, train_loader, criterion, optimizer, device):
     return epoch_loss, epoch_acc
 
 def evaluate_model(model, test_loader, device):
-     """
+    """
     Evaluates the model on the test dataset.
 
     Computes accuracy, balanced accuracy, and macro F1-score.
@@ -157,7 +158,7 @@ def evaluate_model(model, test_loader, device):
     return all_preds
 
 def predict_single_row(model, row):
-     """
+    """
     Predicts the class of a single input sample.
 
     Args:
@@ -184,7 +185,7 @@ def predict_single_row(model, row):
     return predicted_class.item(), confidence
 
 def plot_confusion_matrix(model, test_loader, device, class_names):
-     """
+    """
     Plots a confusion matrix for model predictions.
 
     Args:

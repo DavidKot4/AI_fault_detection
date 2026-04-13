@@ -1,0 +1,173 @@
+
+FILE: data_processing.py
+============================================================
+
+Loads verified CSV files, audits and cleans the data, combines them into one
+master dataset, then creates balanced training and test files.
+
+def data_audit(files):
+----------------------------------------
+    Verifies that all input CSV files have the expected format.
+
+    Args:
+        files (list): List of file paths to CSV files.
+
+    Returns:
+        None: Prints errors if a mismatch is found, otherwise confirms success.
+
+def split_files(file):
+----------------------------------------
+    Splits dataset into training and testing sets and balances training data.
+
+    Applies:
+        - Stratified train/test split
+        - Undersampling of majority class
+        - Oversampling of minority classes
+
+    Args:
+        file (str): Path to the combined dataset CSV file.
+
+    Returns:
+        None:
+            - Saves test dataset to 'test_data_pure.csv'
+            - Saves balanced training dataset to 'train_data_oversampled.csv'
+            - Prints dataset statistics
+
+
+------------------------------------------------------------
+
+
+FILE: main.py
+============================================================
+
+@file train.py
+@brief Training script for FaultMLP model used in fault classification.
+
+This script:
+- Loads training and testing datasets
+- Initializes and trains a neural network model (FaultMLP)
+- Evaluates model performance on test data
+- Saves the trained model weights
+- Identifies and stores misclassified samples
+- Generates a confusion matrix for performance visualization
+
+Dependencies:
+    - PyTorch
+    - pandas
+    - numpy
+
+------------------------------------------------------------
+
+
+FILE: model.py
+============================================================
+
+class FaultMLP(nn.Module):
+----------------------------------------
+    Multi-Layer Perceptron (MLP) for fault classification.
+
+    This model consists of three fully connected layers with ReLU activations
+    and dropout for regularization. The final layer outputs raw logits suitable
+    for use with loss functions like CrossEntropyLoss.
+
+    Args:
+        input_size (int, optional): Number of input features. Defaults to 24.
+        num_classes (int, optional): Number of output classes. Defaults to 5.
+
+def __init__(self, input_size=24, num_classes=5):
+----------------------------------------
+        Initializes the FaultMLP model.
+
+        Args:
+            input_size (int, optional): Number of input features.
+            num_classes (int, optional): Number of output classes.
+
+def forward(self, x):
+----------------------------------------
+        Performs a forward pass through the network.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, input_size).
+
+        Returns:
+            torch.Tensor: Output tensor of shape (batch_size, num_classes)
+            containing raw logits.
+
+
+------------------------------------------------------------
+
+FILE: train_utils.py
+============================================================
+
+def load_train_test_set(train_df, test_df):
+----------------------------------------
+        Loads and preprocesses training and testing datasets.
+
+        This function:
+        - Splits features and labels
+        - Applies QuantileTransformer normalization
+        - Saves the scaler for future inference
+        - Converts arrays into PyTorch TensorDatasets
+
+        Args:
+            train_df (pd.DataFrame): Training dataframe containing features and 'class' column.
+            test_df (pd.DataFrame): Testing dataframe containing features and 'class' column.
+
+        Returns:
+            tuple: (train_dataset, test_dataset) as PyTorch TensorDataset objects.
+
+def train_model(model, train_loader, criterion, optimizer, device):
+----------------------------------------
+    Trains the model for one epoch.
+
+    Performs forward pass, loss computation, backpropagation,
+    and optimizer updates while tracking accuracy.
+
+    Args:
+        model (torch.nn.Module): Neural network model.
+        train_loader (DataLoader): Training data loader.
+        criterion: Loss function (e.g., CrossEntropyLoss).
+        optimizer: Optimization algorithm (e.g., Adam).
+        device (torch.device): CPU or GPU device.
+
+    Returns:
+        tuple: (epoch_loss, epoch_accuracy)
+
+def evaluate_model(model, test_loader, device):
+----------------------------------------
+    Evaluates the model on the test dataset.
+
+    Computes accuracy, balanced accuracy, and macro F1-score.
+
+    Args:
+        model (torch.nn.Module): Trained model.
+        test_loader (DataLoader): Test data loader.
+        device (torch.device): CPU or GPU device.
+
+    Returns:
+        np.ndarray: Predicted class labels for the test set.
+
+def predict_single_row(model, row):
+----------------------------------------
+    Predicts the class of a single input sample.
+
+    Args:
+        model (torch.nn.Module): Trained model.
+        row (torch.Tensor): Input tensor of shape (1, num_features).
+
+    Returns:
+        tuple: (predicted_class, confidence_percentage)
+
+def plot_confusion_matrix(model, test_loader, device, class_names):
+----------------------------------------
+    Plots a confusion matrix for model predictions.
+
+    Args:
+        model (torch.nn.Module): Trained model.
+        test_loader (DataLoader): Test data loader.
+        device (torch.device): CPU or GPU device.
+        class_names (list): List of class labels for display.
+
+
+------------------------------------------------------------
+
