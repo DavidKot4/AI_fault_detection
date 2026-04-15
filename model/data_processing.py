@@ -1,3 +1,7 @@
+"""
+Loads verified CSV files, audits and cleans the data, combines them into one
+master dataset, then creates balanced training and test files.
+"""
 import pandas as pd
 import glob
 from imblearn.over_sampling import RandomOverSampler
@@ -9,7 +13,17 @@ folder_path = './data/verified/*.csv'
 output_path = './data_out/final_data3.csv'
 all_files = glob.glob(folder_path)
 
+
 def data_audit(files):
+    """
+    Verifies that all input CSV files have the expected format.
+
+    Args:
+        files (list): List of file paths to CSV files.
+
+    Returns:
+        None: Prints errors if a mismatch is found, otherwise confirms success.
+    """
     for filename in files:
         df = pd.read_csv(filename, index_col=False)
         if(len(df.columns) != 26):
@@ -51,12 +65,29 @@ print(master_df['class'].value_counts(normalize=True) * 100)
 
 
 def split_files(file):
-     
-     df = pd.read_csv(file, index_col=False)
-     X = df.drop('class', axis=1)
-     Y = df['class']
+    """
+    Splits dataset into training and testing sets and balances training data.
 
-     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=.20, random_state=42, stratify=Y)
+    Applies:
+        - Stratified train/test split
+        - Undersampling of majority class
+        - Oversampling of minority classes
+
+    Args:
+        file (str): Path to the combined dataset CSV file.
+
+    Returns:
+        None:
+            - Saves test dataset to 'test_data_pure.csv'
+            - Saves balanced training dataset to 'train_data_oversampled.csv'
+            - Prints dataset statistics
+    """
+     
+    df = pd.read_csv(file, index_col=False)
+    X = df.drop('class', axis=1)
+    Y = df['class']
+
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=.20, random_state=42, stratify=Y)
 
      #Create test file
      test_df = pd.concat([y_test, x_test], axis=1)
