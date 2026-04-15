@@ -19,7 +19,7 @@ def load_train_test_set(train_df, test_df):
     x_train = scaler.fit_transform(x_train_raw)
     x_test = scaler.transform(x_test_raw)
 
-    joblib.dump(scaler, 'data_scalerV2.2.pkl')
+    joblib.dump(scaler, 'data_scalerV3.pkl')
 
     # Assuming X_train_scaled is your array after the scaler
     print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")

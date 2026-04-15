@@ -20,8 +20,8 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 #Load test/train data and convert to tensors
-train_df = pd.read_csv('./data_out/train_data_oversampled.csv')
-test_df = pd.read_csv('./data_out/test_data_pure.csv')
+train_df = pd.read_csv('./data_out/train_data_oversampled2.csv')
+test_df = pd.read_csv('./data_out/test_data_pure2.csv')
 
 train_dataset, test_dataset = load_train_test_set(train_df, test_df)
 
@@ -34,7 +34,7 @@ for epoch in range(num_epochs):
     loss, accr = train_model(model, train_loader, criterion, optimizer, device)
     print(f"Epoch {epoch} - Loss: {loss} Accuracy: {accr}%")
 
-torch.save(model.state_dict(), "./model/saved_models/fault_model_v2.2.pth")
+torch.save(model.state_dict(), "./model/saved_models/fault_model_v3.pth")
 
 #Run test loader
 all_preds = evaluate_model(model, test_loader, device)
@@ -42,7 +42,7 @@ all_preds = evaluate_model(model, test_loader, device)
 #save problem rows
 test_df.insert(0, 'predicted_class', all_preds)
 mislabeled = test_df[test_df['class'] != test_df['predicted_class']]
-print(f"Found {len(mislabeled)} rows & saved to CSV.")
+print(f"Found {len(mislabeled)} mislabeled rows & saved to CSV.")
 mislabeled.to_csv('./data_out/mislabeled_rows.csv', index=False)
 
 #plot confusion matrix

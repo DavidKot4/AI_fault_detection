@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 
 folder_path = './data/verified/*.csv'
-output_path = './data_out/final_data2.csv'
+output_path = './data_out/final_data3.csv'
 all_files = glob.glob(folder_path)
 
 def data_audit(files):
@@ -60,27 +60,27 @@ def split_files(file):
 
      #Create test file
      test_df = pd.concat([y_test, x_test], axis=1)
-     test_df.to_csv('./data_out/test_data_pure.csv', index=False)
+     test_df.to_csv('./data_out/test_data_pure2.csv', index=False)
      print(f"Saved {len(test_df)} rows to test_data_pure.csv")
      print(test_df['class'].value_counts())
 
      #Undersample normal rows
-     rus = RandomUnderSampler(sampling_strategy={0: 2048}, random_state=42)
-     X_train_under, y_train_under = rus.fit_resample(x_train, y_train)
+     # rus = RandomUnderSampler(sampling_strategy={0: 2048}, random_state=42)
+     # X_train_under, y_train_under = rus.fit_resample(x_train, y_train)
 
-     strategy = {0:2048, 1:2048, 2:2048, 3:2048, 4:2048}
+     # strategy = {0:2048, 1:2048, 2:2048, 3:2048, 4:2048}
 
      #Oversample fault rows in training file
-     ros = RandomOverSampler(sampling_strategy=strategy, random_state=42)
-     X_train_final, y_train_final = ros.fit_resample(X_train_under, y_train_under)
+     # ros = RandomOverSampler(sampling_strategy=strategy, random_state=42)
+     # X_train_final, y_train_final = ros.fit_resample(X_train_under, y_train_under)
      
      #Write to training CSV
-     train_resampled_df = pd.concat([y_train_final, X_train_final], axis=1)
-     #train_resampled_df = train_resampled_df.sample(frac=1, random_state=42).reset_index(drop=True)
+     train_resampled_df = pd.concat([ y_train, x_train], axis=1)
+     
 
-     train_resampled_df.to_csv('./data_out/train_data_oversampled.csv', index=False)
+     train_resampled_df.to_csv('./data_out/train_data_oversampled2.csv', index=False)
      
      print(f"Saved {len(train_resampled_df)} rows to training_data.csv")
      print(train_resampled_df['class'].value_counts())
 
-split_files(output_path)
+split_files("./data_out/final_data3.csv")
