@@ -12,7 +12,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Running model with: {device}")
 
 #LOAD SCALER
-scaler = joblib.load('./model/saved_models/data_scalerv3.pkl')
+scaler = joblib.load('./model/saved_models/data_scalerV3.pkl')
 
 #INITIALIZE & LOAD MODEL
 model = FaultMLP(input_size=24, num_classes=5)

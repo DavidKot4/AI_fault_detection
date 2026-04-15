@@ -1,4 +1,4 @@
-from modbus_polling import poll_device, decode_register
+import modbus_polling as modbus_polling
 import joblib
 import torch
 import numpy as np
@@ -7,9 +7,9 @@ from pymodbus.client import ModbusTcpClient
 from train_utils import predict_single_row
 from model import FaultMLP
 
-SCALER_PATH='./model/saved_models/data_scalerv3.pkl'
+SCALER_PATH='./model/saved_models/data_scalerV3.pkl'
 MODEL_PATH='./model/saved_models/fault_model_v3.pth'
-DEVICE_IP='192.168.168.11'
+DEVICE_IP="192.168.168.11"
 POLL_TIME=0.125
 
 #load model
@@ -37,7 +37,9 @@ try:
 
         loop_start = time.time()
 
-        curr_row = poll_device(client, DEVICE_IP)
+        curr_row = modbus_polling.poll_device(client, DEVICE_IP)
+
+        print(curr_row)
 
         #scale data & convert to tensor
         scaled_row = scaler.transform(np.array(curr_row).reshape(1, -1))
