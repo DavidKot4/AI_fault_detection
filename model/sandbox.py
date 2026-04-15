@@ -1,7 +1,5 @@
 import torch
-import torch.nn.functional as F
 import joblib
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 import seaborn as sns
@@ -101,22 +99,5 @@ sample_data = [
     [94.5214386,126.3402634,115.4724884,192.2930756,199.7386322,188.9520416,1.705238819,1.650065541,0.14518331,161.1816254,208.4697113,16.76467896,61.36824417,-18.44480133,14.06447792,55.23254776,112.4812317,8.047404289,0.380739689,0.088477127,0.838935137,6.367539406,5.581431866,4.953114986]
 ]
 
-#INFERENCE LOOP
-def predict_rows(sample_data):
-    for i, raw_row in enumerate(sample_data):
-        # Scale and Reshape
-        scaled_data = scaler.transform(np.array(raw_row).reshape(1, -1))
-        input_tensor = torch.tensor(scaled_data, dtype=torch.float32).to(device)
-        
-        with torch.no_grad():
-            output = model(input_tensor)
-            probabilities = F.softmax(output, dim=1)
 
-            conf, predicted = torch.max(probabilities, 1)
-            percent = conf.item() * 100
-
-        all_probs = probabilities.cpu().numpy()[0]
-        print(f"Sample {i+1} Prediction: Class {predicted.item()} ({percent:.2f}% Confidence)")
-        
-        print(f"  Total Model Predictions: { [f'{p*100:.1f}%' for p in all_probs] }")
 

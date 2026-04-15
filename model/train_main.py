@@ -1,5 +1,5 @@
 """
-@file train.py
+@file train_main.py
 @brief Training script for FaultMLP model used in fault classification.
 
 This script:

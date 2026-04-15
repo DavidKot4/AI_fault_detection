@@ -1,5 +1,7 @@
 import torch
 from torch.utils.data import TensorDataset
+import torch.nn.functional as F
+import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix
@@ -220,3 +222,22 @@ def plot_confusion_matrix(model, test_loader, device, class_names):
     plt.xlabel('Predicted Fault Type')
     plt.title('Fault Detection Confusion Matrix')
     plt.show()
+
+#INFERENCE LOOP
+def predict_rows(sample_data, scaler, model, device):
+    for i, raw_row in enumerate(sample_data):
+        # Scale and Reshape
+        scaled_data = scaler.transform(np.array(raw_row).reshape(1, -1))
+        input_tensor = torch.tensor(scaled_data, dtype=torch.float32).to(device)
+        
+        with torch.no_grad():
+            output = model(input_tensor)
+            probabilities = F.softmax(output, dim=1)
+
+            conf, predicted = torch.max(probabilities, 1)
+            percent = conf.item() * 100
+
+        all_probs = probabilities.cpu().numpy()[0]
+        print(f"Sample {i+1} Prediction: Class {predicted.item()} ({percent:.2f}% Confidence)")
+        
+        print(f"  Total Model Predictions: { [f'{p*100:.1f}%' for p in all_probs] }")
