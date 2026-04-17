@@ -26,7 +26,7 @@ model.eval()
 print("Loaded model successfully")
 
 #create modbus client
-client = ModbusTcpClient(DEVICE_IP, port=502)
+client = ModbusTcpClient(DEVICE_IP, port=502, timeout=3)
 client.connect()
 
 print(f'Connected successfully to {DEVICE_IP}, begin polling')
