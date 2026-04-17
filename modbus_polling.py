@@ -7,7 +7,7 @@ def decode_register(reg1, reg2):
 
 def poll_device(client, ip):
     
-    result = client.read_holding_registers(address=1, count=50)
+    result = client.read_holding_registers(address=1, count=48, slave=1)
     
     if result.isError():
         print(f"[{ip}] Error reading registers: {result}")
