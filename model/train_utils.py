@@ -170,6 +170,9 @@ def predict_single_row(model, row):
     Returns:
         tuple: (predicted_class, confidence_percentage)
     """
+    if row.dim() == 1:
+        row = row.unsqueeze(0)
+
     model.eval()
 
     with torch.no_grad():
@@ -178,13 +181,14 @@ def predict_single_row(model, row):
         # 5. Interpret Results
         # 'output' is a list of 5 "scores" (Logits)
         # We take the index of the highest score
-        _, predicted_class = torch.max(output, 1)
-        
+        _, predicted_tensor = torch.max(output, 1)
+        predicted_class = predicted_tensor.item()
+
         # Get the probability (confidence) using Softmax
         probabilities = torch.nn.functional.softmax(output, dim=1)
         confidence = torch.max(probabilities).item() * 100
 
-    return predicted_class.item(), confidence
+    return predicted_class, confidence
 
 def plot_confusion_matrix(model, test_loader, device, class_names):
     """
@@ -223,7 +227,6 @@ def plot_confusion_matrix(model, test_loader, device, class_names):
     plt.title('Fault Detection Confusion Matrix')
     plt.show()
 
-#INFERENCE LOOP
 def predict_rows(sample_data, scaler, model, device):
     for i, raw_row in enumerate(sample_data):
         # Scale and Reshape
