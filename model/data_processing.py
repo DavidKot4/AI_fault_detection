@@ -63,10 +63,6 @@ print(master_df.head(10))
 print(master_df['class'].value_counts())
 print(master_df['class'].value_counts(normalize=True) * 100)
 
-
-import pandas as pd
-from sklearn.model_selection import train_test_split
-
 def split_files(file):
     """
     Splits dataset into training and testing sets and balances training data.

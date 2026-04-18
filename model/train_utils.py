@@ -39,7 +39,7 @@ def load_train_test_set(train_df, test_df):
 
     joblib.dump(scaler, 'data_scalerV3.pkl')
 
-    # Assuming X_train_scaled is your array after the scaler
+    # View scaled range of data
     print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")
     print(f"1-Phase fault range (scaled): {np.min(x_train[y_train==1]):.4f} to {np.max(x_train[y_train==1]):.4f}")
     print(f"2-Phase fault range (scaled): {np.min(x_train[y_train==2]):.4f} to {np.max(x_train[y_train==2]):.4f}")
@@ -85,7 +85,7 @@ def train_model(model, train_loader, criterion, optimizer, device):
         # 1. Move data to the Jetson GPU
         inputs, labels = inputs.to(device), labels.to(device)
 
-        # 2. Clear previous gradients (Don't let them accumulate)
+        # 2. Clear previous gradients
         optimizer.zero_grad()
 
         # 3. Forward Pass: Get the MLP's guess

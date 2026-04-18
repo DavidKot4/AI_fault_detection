@@ -23,7 +23,7 @@ class FaultMLP(nn.Module):
         """
         super(FaultMLP, self).__init__()
         
-        # Layer 1: Reads in 27 features and transform them into 64-demension space (improved accuracy)
+        # Layer 1: Reads in 24 features and transform them into 64-demension space (improved accuracy)
         self.fc1 = nn.Linear(input_size, 64)
         self.dropout1 = nn.Dropout(0.2) #Randomly turns off 20% of neurons to prevent model from overfitting
         
