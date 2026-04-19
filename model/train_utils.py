@@ -3,12 +3,15 @@ from torch.utils.data import TensorDataset
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import QuantileTransformer
-import seaborn as sns
-from sklearn.metrics import f1_score, balanced_accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, balanced_accuracy_score
 import joblib
+from sklearn.preprocessing import QuantileTransformer
+import seaborn as sns 
+from sklearn.inspection import permutation_importance
+
+
+def calc_per_unit(base, value):
+    return value / base
 
 def load_train_test_set(train_df, test_df):
     """
@@ -37,7 +40,7 @@ def load_train_test_set(train_df, test_df):
     x_train = scaler.fit_transform(x_train_raw)
     x_test = scaler.transform(x_test_raw)
 
-    joblib.dump(scaler, 'data_scalerV3.pkl')
+    joblib.dump(scaler, './model/saved_models/data_scalerV3.pkl')
 
     # View scaled range of data
     print(f"Normal data range (scaled): {np.min(x_train[y_train==0]):.4f} to {np.max(x_train[y_train==0]):.4f}")
@@ -173,8 +176,6 @@ def predict_single_row(model, row):
     if row.dim() == 1:
         row = row.unsqueeze(0)
 
-    model.eval()
-
     with torch.no_grad():
         output = model(row)
         
@@ -244,3 +245,54 @@ def predict_rows(sample_data, scaler, model, device):
         print(f"Sample {i+1} Prediction: Class {predicted.item()} ({percent:.2f}% Confidence)")
         
         print(f"  Total Model Predictions: { [f'{p*100:.1f}%' for p in all_probs] }")
+
+def plot_feature_importance(model, X_test, y_test, feature_names, device):
+    # 1. Create a Wrapper Class that sklearn understands
+    class SklearnWrapper:
+        def __init__(self, model, device):
+            self.model = model
+            self.device = device
+            self._estimator_type = "classifier"
+
+        def predict(self, X):
+            self.model.eval()
+            # Convert NumPy input to Tensor
+            X_tensor = torch.tensor(X, dtype=torch.float32).to(self.device)
+            with torch.no_grad():
+                outputs = self.model(X_tensor)
+                _, predicted = torch.max(outputs, 1)
+            return predicted.cpu().numpy()
+        
+        def score(self, X, y):
+            preds = self.predict(X)
+            return accuracy_score(y, preds)
+        
+        def fit(self, X, y):
+            return self # Model is already trained
+
+    # 2. Initialize the wrapper
+    wrapped_model = SklearnWrapper(model, device)
+
+    # 3. Calculate Permutation Importance
+    # CRITICAL: Use scaled data, not raw data!
+    result = permutation_importance(
+        wrapped_model, X_test, y_test, n_repeats=5, random_state=42, n_jobs=1
+    )
+
+    # 4. Organize for plotting
+    sorted_idx = result.importances_mean.argsort()[::-1]
+    
+    plt.figure(figsize=(10, 8))
+    sns.barplot(
+        x=result.importances_mean[sorted_idx], 
+        y=[feature_names[i] for i in sorted_idx],
+        hue=[feature_names[i] for i in sorted_idx], # Added to avoid warning
+        legend=False,
+        palette="viridis"
+    )
+    
+    plt.title("Feature Importance: Power Grid Fault Detection", fontsize=14)
+    plt.xlabel("Accuracy Drop when Shuffled", fontsize=12)
+    plt.tight_layout()
+    plt.show()
+

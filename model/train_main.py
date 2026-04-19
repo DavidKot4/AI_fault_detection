@@ -39,8 +39,8 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 #Load test/train data and convert to tensors
-train_df = pd.read_csv('./data_out/train_data_oversampled2.csv')
-test_df = pd.read_csv('./data_out/test_data_pure2.csv')
+train_df = pd.read_csv('./data_out/train_data.csv')
+test_df = pd.read_csv('./data_out/test_data.csv')
 
 train_dataset, test_dataset = load_train_test_set(train_df, test_df)
 

@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 
 folder_path = './data/verified/*.csv'
-output_path = './data_out/final_data3.csv'
+output_path = './data_out/final_data.csv'
 all_files = glob.glob(folder_path)
 
 
@@ -45,12 +45,19 @@ li = []
 for filename in all_files:
      df = pd.read_csv(filename, usecols=range(26), on_bad_lines='warn', index_col=False)
      df.columns = [c.strip() for c in df.columns] # Cleans the headers
-     df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x) # Cleans the data
+     df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x) # Cleans the data of whitespace & converts to objects
 
      #Drop time column
      if 't+' in df.columns:
           df = df.drop(columns=['t+'])
 
+    #save 'base' row for per-unit calc
+     exclude_cols = ['class', 'PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
+     pu_cols = [c for c in df.columns if c not in exclude_cols]  
+
+    #For each column within df, calculate per unit value
+     df[pu_cols] = df[pu_cols] / df[pu_cols].iloc[1]
+        
      li.append(df)
 
 #The "Big Bang" - Fuse them into one master dataframe
@@ -90,7 +97,7 @@ def split_files(file):
 
     # Create test file
     test_df = pd.concat([y_test, x_test], axis=1)
-    test_df.to_csv('./data_out/test_data_pure2.csv', index=False)
+    test_df.to_csv('./data_out/test_data.csv', index=False)
     print(f"Saved {len(test_df)} rows to test_data_pure.csv")
     print(test_df['class'].value_counts())
 
@@ -107,9 +114,9 @@ def split_files(file):
     # Write to training CSV
     train_resampled_df = pd.concat([y_train, x_train], axis=1)
 
-    train_resampled_df.to_csv('./data_out/train_data_oversampled2.csv', index=False)
+    train_resampled_df.to_csv('./data_out/train_data.csv', index=False)
 
     print(f"Saved {len(train_resampled_df)} rows to training_data.csv")
     print(train_resampled_df['class'].value_counts())
 
-split_files("./data_out/final_data3.csv")
+split_files("./data_out/final_data.csv")
