@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(".."))
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from modbus_reader import read_modbus
+from backend.modbus_reader import read_modbus
 from model.model import predict
 import time
 
@@ -13,10 +13,17 @@ CORS(app)
 
 @app.route("/data")
 def get_data():
+
+    start = time.perf_counter()   # start timer
+
     try:
         raw_data = read_modbus()
 
         result = predict(raw_data)
+
+        duration = time.perf_counter() - start  # end timer
+
+        print(f"inference_time_ms: {round(duration * 1000, 3)}")
 
         return jsonify({
             "timestamp": time.strftime("%H:%M:%S"),

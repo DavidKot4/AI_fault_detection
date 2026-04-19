@@ -63,10 +63,10 @@ import joblib
 import os
 
 # Device
-device = torch.device("cpu")
+device = torch.device("cuda")
 
 # Load scaler
-scaler = joblib.load(os.path.join(os.path.dirname(__file__), "saved_models", "data_scalerv3.pkl"))
+scaler = joblib.load(os.path.join(os.path.dirname(__file__), "saved_models", "data_scalerV3.pkl"))
 
 # Load model
 model = FaultMLP(input_size=24, num_classes=5)
