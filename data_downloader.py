@@ -1,7 +1,7 @@
 
 import csv
 import time
-import modbus_polling
+import model.modbus_polling as modbus_polling
 from pynput import keyboard
 from pymodbus.client import ModbusTcpClient
 

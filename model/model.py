@@ -13,7 +13,7 @@ class FaultMLP(nn.Module):
         input_size (int, optional): Number of input features. Defaults to 24.
         num_classes (int, optional): Number of output classes. Defaults to 5.
     """
-    def __init__(self, input_size=24, num_classes=5):
+    def __init__(self, input_size=12, num_classes=5):
         """
         Initializes the FaultMLP model.
 
@@ -23,7 +23,7 @@ class FaultMLP(nn.Module):
         """
         super(FaultMLP, self).__init__()
         
-        # Layer 1: Reads in 27 features and transform them into 64-demension space (improved accuracy)
+        # Layer 1: Reads in 24 features and transform them into 64-demension space (improved accuracy)
         self.fc1 = nn.Linear(input_size, 64)
         self.dropout1 = nn.Dropout(0.2) #Randomly turns off 20% of neurons to prevent model from overfitting
         
@@ -56,4 +56,61 @@ class FaultMLP(nn.Module):
         # Output layer (CrossEntropyLoss handles Softmax automatically)
         x = self.fc3(x)
         return x
-    
+
+
+import torch
+import joblib
+import os
+
+# Device
+device = torch.device("cuda")
+
+# Load scaler
+scaler = joblib.load(os.path.join(os.path.dirname(__file__), "saved_models", "data_scalerV3.pkl"))
+
+# Load model
+model = FaultMLP(input_size=24, num_classes=5)
+model.load_state_dict(
+    torch.load(os.path.join(os.path.dirname(__file__), "saved_models", "fault_model_v3.pth"),
+               map_location=device)
+)
+model.eval()
+
+# Class labels (adjust if needed)
+CLASS_NAMES = [
+    "No Fault",
+    "1-Phase Fault",
+    "2-Phase Fault",
+    "3-Phase Fault",
+    "Ground Fault"
+]
+
+def build_feature_vector(data):
+    return [
+        data["V_L1"], data["V_L2"], data["V_L3"],
+        data["V_L1_L2"], data["V_L2_L3"], data["V_L3_L1"],
+        data["I_L1"], data["I_L2"], data["I_L3"],
+        data["VA_L1"], data["VA_L2"], data["VA_L3"],
+        data["W_L1"], data["W_L2"], data["W_L3"],
+        data["Q_L1"], data["Q_L2"], data["Q_L3"],
+        data["PF_L1"], data["PF_L2"], data["PF_L3"],
+        data["THD_L1"], data["THD_L2"], data["THD_L3"],
+    ]
+
+def predict(data):
+    features = build_feature_vector(data)
+
+    # Scale features
+    scaled = scaler.transform([features])
+
+    x = torch.tensor(scaled, dtype=torch.float32)
+
+    with torch.no_grad():
+        outputs = model(x)
+        probs = torch.softmax(outputs, dim=1)
+        confidence, predicted = torch.max(probs, 1)
+
+    return {
+        "fault_type": CLASS_NAMES[predicted.item()],
+        "confidence": confidence.item()
+    }
