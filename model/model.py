@@ -13,7 +13,7 @@ class FaultMLP(nn.Module):
         input_size (int, optional): Number of input features. Defaults to 24.
         num_classes (int, optional): Number of output classes. Defaults to 5.
     """
-    def __init__(self, input_size=24, num_classes=5):
+    def __init__(self, input_size=12, num_classes=5):
         """
         Initializes the FaultMLP model.
 

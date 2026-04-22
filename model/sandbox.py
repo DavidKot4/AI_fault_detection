@@ -9,16 +9,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Running model with: {device}")
 
 #LOAD SCALER
-scaler = joblib.load('./model/saved_models/data_scaler_v4.pkl')
+scaler = joblib.load('./model/saved_models/data_scaler_v5.pkl')
 
 #INITIALIZE & LOAD MODEL
-model = FaultMLP(input_size=24, num_classes=5)
-model.load_state_dict(torch.load('./model/saved_models/fault_model_v4.pth', map_location=device))
+model = FaultMLP(input_size=12, num_classes=5)
+model.load_state_dict(torch.load('./model/saved_models/fault_model_v5.pth', map_location=device))
 model.to(device)
 model.eval()
 print("Loaded model successsfully")
 
 newData_df = pd.read_csv('./data_out/unseen_data.csv')
+
+drop_columns = ["A_L1","A_L2","A_L3","VA_L1","VA_L2","VA_L3","W_L1","W_L2","W_L3","Q_L1","Q_L2","Q_L3"]
+     
+newData_df = newData_df.drop(columns=drop_columns, errors="ignore")
 
 #save 'base' row for per-unit calc
 exclude_cols = ['PF_L1', 'PF_L2', 'PF_L3', 'THD_L1', 'THD_L2', 'THD_L3']
@@ -27,6 +31,7 @@ pu_cols = [c for c in newData_df.columns if c not in exclude_cols]
 #For each column within df, calculate per unit value
 newData_df[pu_cols] = newData_df[pu_cols] / newData_df[pu_cols].iloc[1]
 
+print(newData_df.head(10))
 
 #Load test/train data and convert to tensors
 train_df = pd.read_csv('./data_out/train_data.csv')
@@ -38,8 +43,6 @@ train_dataset, test_dataset = load_train_test_set(train_df, test_df)
 
 feature_names = [
      "V_L1", "V_L2", "V_L3", "V_L12", "V_L23", "V_L31",
-    "A_L1", "A_L2", "A_L3", "VA_L1", "VA_L2", "VA_L3",
-    "W_L1", "W_L2", "W_L3", "Q_L1", "Q_L2", "Q_L3",
     "PF_L1", "PF_L2", "PF_L3", "THD_L1", "THD_L2", "THD_L3"
 ]
 

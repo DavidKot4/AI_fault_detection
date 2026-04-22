@@ -32,7 +32,7 @@ device = torch.device(device = torch.device("cuda" if torch.cuda.is_available() 
 print(f"Using device: {device}")
 
 #Create Model
-model = FaultMLP(input_size=24, num_classes=5).to(device)
+model = FaultMLP(input_size=12, num_classes=5).to(device)
 
 # Loss and Optimizer
 criterion = nn.CrossEntropyLoss()
@@ -53,7 +53,7 @@ for epoch in range(num_epochs):
     loss, accr = train_model(model, train_loader, criterion, optimizer, device)
     print(f"Epoch {epoch} - Loss: {loss} Accuracy: {accr}%")
 
-torch.save(model.state_dict(), "./model/saved_models/fault_model_v4.pth")
+torch.save(model.state_dict(), "./model/saved_models/fault_model_v5.pth")
 
 #Run test loader
 all_preds = evaluate_model(model, test_loader, device)

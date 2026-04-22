@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 
 folder_path = './data/verified/*.csv'
-output_path = './data_out/final_data.csv'
+output_path = './data_out/final_data_dropFeats.csv'
 all_files = glob.glob(folder_path)
 
 
@@ -46,6 +46,10 @@ for filename in all_files:
      df = pd.read_csv(filename, usecols=range(26), on_bad_lines='warn', index_col=False)
      df.columns = [c.strip() for c in df.columns] # Cleans the headers
      df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x) # Cleans the data of whitespace & converts to objects
+
+     drop_columns = ["A_L1","A_L2","A_L3","VA_L1","VA_L2","VA_L3","W_L1","W_L2","W_L3","Q_L1","Q_L2","Q_L3"]
+     
+     df = df.drop(columns=drop_columns, errors="ignore")
 
      #Drop time column
      if 't+' in df.columns:
@@ -119,4 +123,4 @@ def split_files(file):
     print(f"Saved {len(train_resampled_df)} rows to training_data.csv")
     print(train_resampled_df['class'].value_counts())
 
-split_files("./data_out/final_data.csv")
+split_files(output_path)
