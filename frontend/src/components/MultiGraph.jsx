@@ -13,26 +13,32 @@ export default function MultiGraph({ title, lines }) {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    let t = 0;
-
     const interval = setInterval(() => {
-      t++;
+      fetch("http://localhost:5000/data")
+        .then((res) => res.json())
+        .then((newData) => {
+          if (newData.error) {
+            console.error("Backend error:", newData.error);
+            return;
+          }
 
-      const newPoint = {
-        time: t,
-      };
+          const point = {
+            time: newData.timestamp,
+          };
 
-      // generate fake data for each line
-      lines.forEach((line) => {
-        newPoint[line] = generateValue(line);
-      });
+          // map backend values into graph
+          lines.forEach((line) => {
+            point[line] = newData[line];
+          });
 
-      setData((prev) => {
-        const updated = [...prev, newPoint];
-        if (updated.length > 20) updated.shift();
-        return updated;
-      });
-    }, 1000);
+          setData((prev) => {
+            const updated = [...prev, point];
+            if (updated.length > 20) updated.shift(); // keep last 20 points
+            return updated;
+          });
+        })
+        .catch((err) => console.error(err));
+    }, 1000); // update every second
 
     return () => clearInterval(interval);
   }, [lines]);
@@ -64,23 +70,6 @@ export default function MultiGraph({ title, lines }) {
       </div>
     </div>
   );
-}
-
-/* fake realistic values */
-function generateValue(type) {
-  const base = {
-    V: 230,
-    I: 1,
-    P: 50,
-    VA: 300,
-  };
-
-  if (type.includes("V")) return base.V + Math.random() * 10 - 5;
-  if (type.includes("I")) return base.I + Math.random() * 2;
-  if (type.includes("VA")) return base.VA + Math.random() * 50;
-  if (type.includes("W")) return base.P + Math.random() * 20;
-
-  return Math.random() * 100;
 }
 
 const colors = ["#007AFF", "#34C759", "#FF9500"];

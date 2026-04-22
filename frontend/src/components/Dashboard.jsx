@@ -5,13 +5,32 @@ export default function Dashboard() {
   const [fault, setFault] = useState("No Fault");
   const [confidence, setConfidence] = useState(0);
   const [time, setTime] = useState("");
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setFault("1-Phase Fault");
-      setConfidence(0.92);
-      setTime("Apr 9, 14:30");
-    }, 2000);
+    const interval = setInterval(() => {
+      fetch("http://localhost:5000/data")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) {
+            setFault(data.fault_type);
+            setConfidence(data.confidence);
+            setTime(data.timestamp);
+
+            // update history
+            setHistory((prev) => {
+              const newEntry = `${data.fault_type} • ${(data.confidence * 100).toFixed(0)}% • ${data.timestamp}`;
+              const updated = [newEntry, ...prev];
+              return updated.slice(0, 5); // keep last 5
+            });
+          } else {
+            console.error("Backend error:", data.error);
+          }
+        })
+        .catch((err) => console.error(err));
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const isNormal = fault === "No Fault";
@@ -21,7 +40,7 @@ export default function Dashboard() {
       {/* TITLE */}
       <h1 style={titleStyle}>⚡ Smart Grid Fault Monitor ⚡</h1>
 
-      {/* STATUS (stays left like before) */}
+      {/* STATUS */}
       <div style={statusContainer}>
         <div
           style={{
@@ -44,6 +63,7 @@ export default function Dashboard() {
         <Card title="Last Update" value={time} />
       </div>
 
+      {/* GRAPHS */}
       <div style={graphGrid}>
         <MultiGraph
           title="Voltages (Line-to-Neutral)"
@@ -74,9 +94,16 @@ export default function Dashboard() {
       {/* HISTORY */}
       <div style={historyCard}>
         <h3 style={{ marginBottom: "10px" }}>Recent Activity</h3>
-        <p style={historyItem}>1-Phase Fault • 92% • 14:30</p>
-        <p style={historyItem}>2-Phase Fault • 87% • 14:10</p>
-        <p style={historyItem}>No Fault • 100% • 13:55</p>
+
+        {history.length === 0 ? (
+          <p style={historyItem}>Waiting for data...</p>
+        ) : (
+          history.map((item, index) => (
+            <p key={index} style={historyItem}>
+              {item}
+            </p>
+          ))
+        )}
       </div>
     </div>
   );
