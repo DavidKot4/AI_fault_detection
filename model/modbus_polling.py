@@ -7,7 +7,15 @@ def decode_register(reg1, reg2):
 
 def poll_device(client, ip):
     
+<<<<<<< HEAD
     result = client.read_holding_registers(address=1, count=48, slave=1)
+=======
+<<<<<<<< HEAD:model/modbus_polling.py
+    result = client.read_holding_registers(address=1, count=48, slave=1)
+========
+    result = client.read_holding_registers(address=1, count=50, slave=1)
+>>>>>>>> new_model:modbus_polling.py
+>>>>>>> new_model
     
     if result.isError():
         print(f"[{ip}] Error reading registers: {result}")
@@ -22,5 +30,8 @@ def poll_device(client, ip):
     floats = [decode_register(hi, lo) for hi, lo in pairs]
 
     return floats
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> new_model
